@@ -1,9 +1,12 @@
 package com.example.employee_management.controller;
 
+import com.example.employee_management.exception.EmployeeNotFoundException;
 import com.example.employee_management.model.Department;
 import com.example.employee_management.model.Employee;
 import com.example.employee_management.repository.DepartmentRepository;
 import com.example.employee_management.repository.EmployeeRepository;
+
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -37,7 +40,7 @@ public class EmployeeController {
     }
 
    @PostMapping
-    public ResponseEntity<Employee> create(@RequestBody Employee employee) {
+    public ResponseEntity<Employee> create(@Valid @RequestBody Employee employee) {
         if (employee.getDepartment() != null) {
             Department dept = departmentRepository.findById(employee.getDepartment().getId())
                 .orElseThrow(() -> new RuntimeException("Department not found!"));
@@ -53,4 +56,11 @@ public class EmployeeController {
     public List<Employee> getByDept(@PathVariable Long deptId) {
         return employeeRepository.findByDepartmentId(deptId);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Employee> getById(@PathVariable Long id) {
+    Employee emp = employeeRepository.findById(id)
+            .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + id));
+    return ResponseEntity.ok(emp);
+}
 }
