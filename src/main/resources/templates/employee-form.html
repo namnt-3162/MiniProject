@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>Thêm nhân viên</title></head>
+<body>
+    <h2>Thêm nhân viên mới</h2>
+    <form th:action="@{/employees/save}" th:object="${employee}" method="post">
+        Tên: <input type="text" th:field="*{name}" /><br/>
+        Email: <input type="email" th:field="*{email}" /><br/>
+        Phòng ban:
+        <select th:field="*{department}">
+            <option th:each="dept : ${departments}" 
+                    th:value="${dept.id}" 
+                    th:text="${dept.name}"></option>
+        </select><br/>
+        <button type="submit">Lưu</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Quản lý nhân viên</title>
+    <style>
+        .search-container { margin-bottom: 20px; padding: 10px; background: #f4f4f4; }
+        table { width: 100%; border-collapse: collapse; }
+    </style>
+</head>
+<body>
+    <h2>Danh sách nhân viên</h2>
+    
+    <div class="search-container">
+        <form th:action="@{/employees/list}" method="get" style="display: inline-block;">
+            <input type="text" name="keyword" th:value="${keyword}" placeholder="Tìm theo tên..." />
+            <button type="submit">Tìm kiếm</button>
+        </form>
+
+        <form th:action="@{/employees/list}" method="get" style="display: inline-block; margin-left: 20px;">
+            <select name="deptId" onchange="this.form.submit()">
+                <option value="">-- Lọc theo phòng ban --</option>
+                <option th:each="dept : ${departments}" 
+                        th:value="${dept.id}" 
+                        th:text="${dept.name}"
+                        th:selected="${dept.id == param.deptId}"></option>
+            </select>
+        </form>
+        
+        <a th:href="@{/employees/list}" style="margin-left: 10px;">Reset</a>
+    </div>
+
+    <a th:href="@{/employees/add}">+ Thêm nhân viên mới</a>
+    <br/><br/>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên</th>
+                <th>Email</th>
+                <th>Phòng ban</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="emp : ${employees}">
+                <td th:text="${emp.id}"></td>
+                <td th:text="${emp.name}"></td>
+                <td th:text="${emp.email}"></td>
+                <td th:text="${emp.department != null ? emp.department.name : 'N/A'}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(employees)}">
+                <td colspan="4" style="text-align: center;">Không tìm thấy nhân viên nào phù hợp.</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
