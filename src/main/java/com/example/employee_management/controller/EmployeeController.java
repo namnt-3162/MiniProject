@@ -5,6 +5,7 @@ import com.example.employee_management.model.Department;
 import com.example.employee_management.model.Employee;
 import com.example.employee_management.repository.DepartmentRepository;
 import com.example.employee_management.repository.EmployeeRepository;
+import com.example.employee_management.service.EmployeeService;
 
 import jakarta.validation.Valid;
 
@@ -12,6 +13,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,11 +30,13 @@ public class EmployeeController {
 
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
+    private final EmployeeService employeeService;
     private static final Logger logger = LoggerFactory.getLogger(EmployeeController.class);
 
-   public EmployeeController(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository) {
+   public EmployeeController(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository, EmployeeService employeeService) {
         this.employeeRepository = employeeRepository;
         this.departmentRepository = departmentRepository;
+        this.employeeService = employeeService;
     }
 
     // Lấy tất cả hoặc tìm kiếm theo tên
@@ -72,5 +76,17 @@ public class EmployeeController {
     Employee emp = employeeRepository.findById(id)
             .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with ID: " + id));
     return ResponseEntity.ok(emp);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        logger.warn("Warning: Deleting employee with ID: {}", id);
+        employeeRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+    
+    @GetMapping("/report/count")
+    public String getReportCount() {
+        return "Employees: " + employeeService.getTotalEmployees();
     }
 }
