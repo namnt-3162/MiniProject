@@ -1,14 +1,23 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
     <title>Quản lý nhân viên</title>
     <style>
-        .search-container { margin-bottom: 20px; padding: 10px; background: #f4f4f4; }
-        table { width: 100%; border-collapse: collapse; }
+        .search-container { margin-bottom: 20px; padding: 10px; background: #f4f4f4; border-radius: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 8px; text-align: left; }
+        /* Lớp dùng để ẩn các phần tử dành riêng cho ADMIN */
+        .admin-only { display: none; } 
+        .header-actions { display: flex; justify-content: space-between; align-items: center; }
+        .logout-btn { background-color: #ff4d4d; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; }
     </style>
 </head>
 <body>
-    <h2>Danh sách nhân viên</h2>
+    <div class="header-actions">
+        <h2>Danh sách nhân viên</h2>
+        <button class="logout-btn" onclick="handleLogout()">Đăng xuất</button>
+    </div>
     
     <div class="search-container">
         <form th:action="@{/employees/list}" method="get" style="display: inline-block;">
@@ -29,8 +38,10 @@
         <a th:href="@{/employees/list}" style="margin-left: 10px;">Reset</a>
     </div>
 
-    <a th:href="@{/employees/add}">+ Thêm nhân viên mới</a>
-    <br/><br/>
+    <div class="admin-only" id="adminActions">
+        <a th:href="@{/employees/add}" style="background: #28a745; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px;">+ Thêm nhân viên mới</a>
+        <br/><br/>
+    </div>
 
     <table border="1">
         <thead>
@@ -39,7 +50,7 @@
                 <th>Tên</th>
                 <th>Email</th>
                 <th>Phòng ban</th>
-            </tr>
+                <th class="admin-only">Thao tác</th> </tr>
         </thead>
         <tbody>
             <tr th:each="emp : ${employees}">
@@ -47,11 +58,42 @@
                 <td th:text="${emp.name}"></td>
                 <td th:text="${emp.email}"></td>
                 <td th:text="${emp.department != null ? emp.department.name : 'N/A'}"></td>
+                <td class="admin-only">
+                    <a th:href="@{'/employees/edit/' + ${emp.id}}">Sửa</a> | 
+                    <a th:href="@{'/employees/delete/' + ${emp.id}}" onclick="return confirm('Bạn có chắc chắn muốn xóa?')">Xóa</a>
+                </td>
             </tr>
             <tr th:if="${#lists.isEmpty(employees)}">
-                <td colspan="4" style="text-align: center;">Không tìm thấy nhân viên nào phù hợp.</td>
+                <td colspan="5" style="text-align: center;">Không tìm thấy nhân viên nào phù hợp.</td>
             </tr>
         </tbody>
     </table>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. Lấy Role từ localStorage (đã lưu ở bước Login)
+            const userRole = localStorage.getItem('userRole'); // Ví dụ: "ADMIN" hoặc "USER"
+
+            // 2. Kiểm tra nếu là ADMIN thì mới hiển thị các phần tử .admin-only
+            if (userRole === 'ADMIN') {
+                const adminElements = document.querySelectorAll('.admin-only');
+                adminElements.forEach(el => {
+                    // Nếu là thẻ <td> hoặc <th>, dùng table-cell, còn lại dùng block/inline
+                    if (el.tagName === 'TD' || el.tagName === 'TH') {
+                        el.style.display = 'table-cell';
+                    } else {
+                        el.style.display = 'block';
+                    }
+                });
+            }
+        });
+
+        function handleLogout() {
+            localStorage.clear();
+            document.cookie = "accessToken=; Max-Age=0; path=/";
+            window.location.href = "/auth.html";
+        }
+    </script>
+    
 </body>
 </html>

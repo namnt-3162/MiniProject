@@ -20,10 +20,15 @@ public class SecurityConfig {
        // Thêm filter trước UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
         .csrf(csrf -> csrf.disable()) // Disable CSRF cho REST API
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll() // Đăng ký/Đăng nhập không cần token
-                .requestMatchers(HttpMethod.GET, "/api/employees/**").hasAnyRole("USER", "ADMIN") // USER và ADMIN đều có thể GET
-                .requestMatchers("/api/employees/**").hasRole("ADMIN") // Chỉ ADMIN mới được POST/PUT/DELETE
+          .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/auth.html", "/auth.js", "/static/**").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
+
+                .requestMatchers(HttpMethod.GET, "/employees/list").hasAnyRole("USER", "ADMIN")
+                .requestMatchers("/employees/add", "/employees/save").hasRole("ADMIN")
+
+                .requestMatchers(HttpMethod.GET, "/api/employees/**").hasAnyRole("USER", "ADMIN")
+                .requestMatchers("/api/employees/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Không dùng Session

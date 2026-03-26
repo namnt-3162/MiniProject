@@ -1,6 +1,7 @@
 package com.example.employee_management.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +14,9 @@ import com.example.employee_management.model.User;
 import com.example.employee_management.payload.AuthResponse;
 import com.example.employee_management.payload.LoginRequest;
 import com.example.employee_management.repository.UserRepository;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -28,14 +32,23 @@ public class AuthController {
         userRepository.save(user);
         return "User registered successfully!";
     }
-
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        // Giả sử xác thực thành công (nên dùng AuthenticationManager)
-        String jwt = tokenProvider.generateToken(loginRequest.getUsername());
-        User user = userRepository.findByUsername(loginRequest.getUsername()).get();
-        
-        // Trả về Token và Role để FE xử lý UI
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+        User user = userRepository.findByUsername(loginRequest.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+        }
+
+        String jwt = tokenProvider.generateToken(user.getUsername());
+
+        Cookie cookie = new Cookie("accessToken", jwt);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(24 * 60 * 60);
+        response.addCookie(cookie);
+
         return ResponseEntity.ok(new AuthResponse(jwt, user.getRole()));
-    }
+    } 
 }
