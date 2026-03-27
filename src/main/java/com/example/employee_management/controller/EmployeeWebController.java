@@ -2,6 +2,7 @@ package com.example.employee_management.controller;
 
 import java.util.List;
 
+import com.example.employee_management.model.DeptStatistics;
 import org.hibernate.validator.internal.util.logging.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -76,5 +77,17 @@ public class EmployeeWebController {
         }
         return "redirect:/employees/list";
     }
-    
+
+    @GetMapping("/statistics")
+    public String getStatistics(Model model) {
+        // Lấy dữ liệu từ Repository
+        List<DeptStatistics> deptStats = employeeRepository.countEmployeesByDept();
+        Long totalEmployees = employeeRepository.countTotalEmployees();
+
+        // Đưa vào Model để Thymeleaf sử dụng
+        model.addAttribute("deptStats", deptStats);
+        model.addAttribute("totalEmployees", totalEmployees);
+
+        return "employee-statistics"; // Trả về file employee-statistics.html
+    }
 }
